@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd  
+			http://www.erayt.com/schema/solar/core
+			http://www.erayt.com/schema/solar/3.0/solar-spring.xsd"
+	default-autowire="byName">
+	
+    <!--  bean id="sqlMapCertClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation" value="classpath:conf/cert/dao/CertSqlConfig.xml" />
+		<property name="dataSource" ref ="${dataSource}" />
+	</bean  -->
+	
+	<bean id="sqlMapCertClient" class="com.erayt.solar2.engine.process.spring.SolarEngineSqlMapClientFactoryBean">
+		<property name="configLocation" value="classpath:conf/cert/dao/CertSqlConfig.xml" />
+		<property name="dataSource" ref ="${dataSource}" />
+		<property name="sqlMapClientProperties">
+		    <props>
+                <prop key="schama">${cert.schema|}</prop>
+            </props>
+		</property>
+	</bean>
+
+	<!-- 配置DAO -->
+	<bean id="workerDao" class="com.erayt.solar.db.DaoProxyFactoryBean">
+		<property name="daoInterface" value="com.erayt.solar.cert.dao.WorkerDao" />
+		<property name="sqlMapClient" ref="sqlMapCertClient" />
+		<property name="dbType" value="${db.type|${dataSource.dbType|ORA}}" />
+	</bean>
+	
+	<!-- 客户基础服务 -->
+	<bean id="workerService" class="com.erayt.solar.cert.service.impl.DefaultWorkerServiceImpl" />	
+	
+	<!-- 客户登录验证服务 -->
+	<bean id="workerLoginService" class="com.erayt.solar.cert.service.impl.WorkerLoginServiceImpl" />	
+	
+	
+	
+	<!-- Tcp client 创建工厂   -->
+	<bean id="remoteFactory" class="com.erayt.solar.cert.remote.RemoteTcpClientFactory" />	
+	
+	
+	<!--  以下接口需要定制   -->
+	
+	<!--  密码服务接口，得到最终加密密码   -->
+	<bean id="workerPassWordService" class="${workerPassWordService}" />	
+	
+	<!--  短信发送、验证接口  -->
+	<bean id="smsService" class="${smsService}" />
+	
+	<!--  短信发送前验证 -->
+	<bean id="smsCheckService" class="${smsCheckService}" />
+	
+	<!--  对私模拟环境同步用户   -->
+	<bean id="workerTranService" class="${workerTranService}" />
+	
+	<!--  登陆前验证过滤器   -->
+	<bean id="beforeCheckUserFilter" class="com.erayt.solar.cert.filter.BeforeCheckUserFilter" />
+	
+	<!--  登录拦截器   -->
+	<bean id="workLoginInterceptService" class="${workLoginInterceptService|com.erayt.solar.cert.service.impl.DefaultWorkLoginInterceptServiceImpl}" />
+	
+	<bean id="workPatchcaCodeService" class="${workPatchcaCodeService|com.erayt.solar.cert.service.impl.WorkPatchcaCodeServiceImpl}" />
+	
+	<bean id="workerVersionService" class="com.erayt.solar.cert.service.impl.WorkerVersionServiceImpl" />
+	
+	
+	
+	
+</beans>
